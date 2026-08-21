@@ -1,0 +1,36 @@
+# HyperGriot .gitignore
+# Excludes dependencies, build output, runtime data, secrets,
+# logs, and editor/OS files. Everything else is tracked.
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Runtime data (per-group store lives here)
+data/
+
+# Environment / secrets (keep the example template)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test / coverage artifacts
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+
+# Local helper files (not part of the project)
+COMMIT_PLAN.md
