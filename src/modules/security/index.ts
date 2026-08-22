@@ -28,20 +28,51 @@ import {
 export const securityComposer = new Composer<Context>();
 
 // ── In-Memory Flood Tracker ─────────────────────────────────────
-interface FloodEntry {
+export interface FloodEntry {
   timestamps: number[];
   lastBreach: number;
+  lastActivity: number;
 }
 const floodMap = new Map<string, FloodEntry>(); // key = `${chatId}:${userId}`
+let floodCheckCounter = 0;
 
-function checkFloodBreach(chatId: number, userId: number, limit: number, windowMs: number): boolean {
+/** Prune inactive entries from the flood map. */
+export function pruneFloodMap(now: number = Date.now(), maxAgeMs: number = 30_000): number {
+  let pruned = 0;
+  for (const [key, entry] of floodMap.entries()) {
+    if (now - entry.lastActivity > maxAgeMs && now - entry.lastBreach > maxAgeMs) {
+      floodMap.delete(key);
+      pruned++;
+    }
+  }
+  return pruned;
+}
+
+/** Clear all tracked flood data (for tests). */
+export function clearFloodMap(): void {
+  floodMap.clear();
+  floodCheckCounter = 0;
+}
+
+/** Return the number of tracked flood entries (for tests). */
+export function getFloodMapSize(): number {
+  return floodMap.size;
+}
+
+export function checkFloodBreach(chatId: number, userId: number, limit: number, windowMs: number, now: number = Date.now()): boolean {
+  floodCheckCounter++;
+  // Periodic eviction every 100 checks or if map size grows large
+  if (floodCheckCounter % 100 === 0 || floodMap.size > 500) {
+    pruneFloodMap(now, windowMs * 2);
+  }
+
   const key = `${chatId}:${userId}`;
-  const now = Date.now();
   let entry = floodMap.get(key);
   if (!entry) {
-    entry = { timestamps: [], lastBreach: 0 };
+    entry = { timestamps: [], lastBreach: 0, lastActivity: now };
     floodMap.set(key, entry);
   }
+  entry.lastActivity = now;
 
   // Filter timestamps within window
   entry.timestamps = entry.timestamps.filter((ts) => now - ts < windowMs);

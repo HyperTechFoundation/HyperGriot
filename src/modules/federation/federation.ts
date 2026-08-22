@@ -44,6 +44,59 @@ export function isFedAdmin(userId: number, fed: Federation): boolean {
   return fed.owner === userId || fed.admins.includes(userId);
 }
 
+export interface FanOutResult {
+  succeeded: number[];
+  failed: { chatId: number; error: unknown; retryable: boolean }[];
+}
+
+/** Check if an API error is transient/retryable (rate limits or server errors). */
+export function isRetryableError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  if ("error_code" in err) {
+    const code = (err as any).error_code;
+    return code === 429 || code >= 500;
+  }
+  if ("name" in err && (err as any).name === "HttpError") {
+    return true;
+  }
+  return false;
+}
+
+/** Fan out an action across federation chats with bounded concurrency and deduplication. */
+export async function fanOutFederationAction(
+  chatIds: number[],
+  action: (chatId: number) => Promise<unknown>,
+  concurrency = 5,
+): Promise<FanOutResult> {
+  const uniqueChats = Array.from(new Set(chatIds));
+  const succeeded: number[] = [];
+  const failed: { chatId: number; error: unknown; retryable: boolean }[] = [];
+
+  let index = 0;
+  async function worker(): Promise<void> {
+    while (index < uniqueChats.length) {
+      const i = index++;
+      const chatId = uniqueChats[i];
+      if (chatId === undefined) break;
+      try {
+        await action(chatId);
+        succeeded.push(chatId);
+      } catch (err) {
+        const retryable = isRetryableError(err);
+        failed.push({ chatId, error: err, retryable });
+      }
+    }
+  }
+
+  const workerCount = Math.min(concurrency, uniqueChats.length);
+  if (workerCount > 0) {
+    const workers = Array.from({ length: workerCount }, () => worker());
+    await Promise.all(workers);
+  }
+
+  return { succeeded, failed };
+}
+
 // ── Federation Management Commands (PM & Groups) ─────────────────
 
 federationComposer.command("newfed", async (ctx) => {
@@ -154,7 +207,7 @@ federationComposer.command("fedinfo", async (ctx) => {
     return;
   }
 
-  const banCount = store.getFedBans(fed.id).length;
+  const banCount = store.getFedBanCount(fed.id);
   await ctx.reply(
     `<b>Federation Info:</b>\n\n` +
       `• Name: <b>${escapeHtml(fed.name)}</b>\n` +
@@ -310,14 +363,10 @@ federationComposer.command("fban", async (ctx) => {
   };
   store.addFedBan(fed.id, fedBan);
 
-  // 2) Fan out ban across all subscribed chats
-  for (const chatId of fed.chats) {
-    try {
-      await ctx.api.banChatMember(chatId, target.userId);
-    } catch {
-      /* continue on individual chat failure */
-    }
-  }
+  // 2) Fan out ban across all subscribed chats with bounded concurrency
+  await fanOutFederationAction(fed.chats, (chatId) =>
+    ctx.api.banChatMember(chatId, target.userId!),
+  );
 
   const info = await getDisplayInfo(ctx, target);
   const admin: UserInfo = {
@@ -360,14 +409,10 @@ federationComposer.command("unfban", async (ctx) => {
 
   store.removeFedBan(fed.id, target.userId);
 
-  // Fan out unban
-  for (const chatId of fed.chats) {
-    try {
-      await ctx.api.unbanChatMember(chatId, target.userId, { only_if_banned: true });
-    } catch {
-      /* continue */
-    }
-  }
+  // Fan out unban across all subscribed chats with bounded concurrency
+  await fanOutFederationAction(fed.chats, (chatId) =>
+    ctx.api.unbanChatMember(chatId, target.userId!, { only_if_banned: true }),
+  );
 
   const info = await getDisplayInfo(ctx, target);
   await ctx.reply(`${userLink(info)} has been unbanned from federation <b>${escapeHtml(fed.name)}</b>.`, {

@@ -29,8 +29,8 @@ export function createBot(): Bot {
   bot.use(userIngestionMiddleware);
   bot.use(disabledCommandsMiddleware);
 
-  // Invalidate the admin cache whenever membership/admin rights change.
-  bot.on("chat_member", (ctx) => {
+  // Invalidate the admin and bot rights cache whenever membership/admin rights change.
+  bot.on(["chat_member", "my_chat_member"], (ctx) => {
     invalidateAdminCache(ctx.chat.id);
   });
 

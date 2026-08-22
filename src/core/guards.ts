@@ -31,9 +31,29 @@ async function getAdminIds(ctx: Context): Promise<number[]> {
   }
 }
 
+// ── Bot identity & membership cache (short TTL) ─────────────────
+let botIdCache: number | null = null;
+const BOT_MEMBER_TTL_MS = 30_000;
+const botMemberCache = new Map<number, { member: MemberWithRights | null; ts: number }>();
+
+export function invalidateBotMemberCache(chatId?: number): void {
+  if (chatId === undefined) {
+    botMemberCache.clear();
+    botIdCache = null;
+  } else {
+    botMemberCache.delete(chatId);
+  }
+}
+
 export function invalidateAdminCache(chatId?: number): void {
-  if (chatId === undefined) adminCache.clear();
-  else adminCache.delete(chatId);
+  if (chatId === undefined) {
+    adminCache.clear();
+    botMemberCache.clear();
+    botIdCache = null;
+  } else {
+    adminCache.delete(chatId);
+    botMemberCache.delete(chatId);
+  }
 }
 
 /** Is the given user an admin (or creator) of this chat, or a global owner? */
@@ -43,8 +63,6 @@ export async function isGroupAdmin(ctx: Context, userId: number): Promise<boolea
   return ids.includes(userId);
 }
 
-// ── Bot identity cache ──────────────────────────────────────────
-let botIdCache: number | null = null;
 async function getBotId(ctx: Context): Promise<number> {
   if (botIdCache !== null) return botIdCache;
   const me = await ctx.api.getMe();
@@ -64,8 +82,18 @@ function memberRights(member: { status: string }): MemberWithRights | null {
 async function botMember(ctx: Context): Promise<MemberWithRights | null> {
   const chatId = ctx.chat?.id;
   if (!chatId) return null;
-  const me = await ctx.api.getChatMember(chatId, await getBotId(ctx));
-  return memberRights(me);
+  const cached = botMemberCache.get(chatId);
+  if (cached && Date.now() - cached.ts < BOT_MEMBER_TTL_MS) {
+    return cached.member;
+  }
+  try {
+    const me = await ctx.api.getChatMember(chatId, await getBotId(ctx));
+    const rights = memberRights(me);
+    botMemberCache.set(chatId, { member: rights, ts: Date.now() });
+    return rights;
+  } catch {
+    return null;
+  }
 }
 
 export async function botCanRestrict(ctx: Context): Promise<boolean> {
