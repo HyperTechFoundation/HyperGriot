@@ -38,12 +38,14 @@ A complete reference of every HyperGriot command. Remember that `!` works in pla
 | `/setgoodbye <text>` | Set the message sent when a member leaves |
 | `/goodbye [on\|off]` | Show the goodbye message, or enable or disable it |
 | `/cleangoodbye <on\|off>` | Delete the previous goodbye when someone new leaves |
+| `/cleargoodbye` | Reset the goodbye message to the default |
 
 ## Rules and notes
 
 | Command | Description |
 | --- | --- |
 | `/setrules <text>` | Set the group rules |
+| `/setrulesbutton <text\|url>` | Attach a button under the rules message |
 | `/rules` | Show the group rules |
 | `/clearrules` | Clear the group rules |
 | `/save <name> <content>` | Save a note, or save the replied message as a note |
@@ -98,6 +100,7 @@ A complete reference of every HyperGriot command. Remember that `!` works in pla
 | Command | Description | PM |
 | --- | --- | :---: |
 | `/newfed <name>` | Create a ban federation; you become its owner | Yes |
+| `/delfed [fedId]` | Delete a federation you own | Yes |
 | `/joinfed <fedId>` | Link this group to a federation | No |
 | `/leavefed` | Remove this group from its federation | No |
 | `/fban <target> [reason]` | Ban a user across every group in the federation | Yes |
@@ -105,6 +108,7 @@ A complete reference of every HyperGriot command. Remember that `!` works in pla
 | `/fedinfo [fedId]` | Show details about a federation | Yes |
 | `/fedadmins` | List a federation's admins | Yes |
 | `/fedbanlist` | List every federation ban | Yes |
+| `/fedsubs` | List all group chats connected to the federation | Yes |
 | `/fedowner` | Show the federation owner | Yes |
 | `/fedpromote <target>` | Promote a user to federation admin | Yes |
 | `/feddemote <target>` | Demote a federation admin | Yes |

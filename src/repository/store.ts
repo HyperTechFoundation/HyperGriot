@@ -7,7 +7,7 @@
  * (See docs/TRD.md §8 and docs/design.md §7).
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { config } from "../config.js";
 import type {
@@ -76,8 +76,14 @@ let data: StoreShape = {
 
 function load(): void {
   try {
+    let raw = "";
     if (existsSync(STORE_PATH)) {
-      const raw = readFileSync(STORE_PATH, "utf8");
+      raw = readFileSync(STORE_PATH, "utf8");
+    } else if (existsSync(STORE_PATH + ".tmp")) {
+      raw = readFileSync(STORE_PATH + ".tmp", "utf8");
+    }
+
+    if (raw) {
       const parsed = JSON.parse(raw) as Partial<StoreShape>;
       data = {
         chats: parsed.chats ?? {},
@@ -94,6 +100,12 @@ function load(): void {
   }
 }
 
+function writeAtomic(filePath: string, content: string): void {
+  const tmpPath = filePath + ".tmp";
+  writeFileSync(tmpPath, content);
+  renameSync(tmpPath, filePath);
+}
+
 let writeScheduled = false;
 function persist(): void {
   if (writeScheduled) return;
@@ -102,9 +114,9 @@ function persist(): void {
     writeScheduled = false;
     try {
       mkdirSync(dirname(STORE_PATH), { recursive: true });
-      writeFileSync(STORE_PATH, JSON.stringify(data, null, 2));
+      writeAtomic(STORE_PATH, JSON.stringify(data, null, 2));
     } catch (err) {
-      if (config.debug) console.error("[store] failed to persist:", err);
+      console.error("[store] failed to persist:", err);
     }
   });
 }
@@ -113,9 +125,9 @@ function persist(): void {
 export function flushSync(): void {
   try {
     mkdirSync(dirname(STORE_PATH), { recursive: true });
-    writeFileSync(STORE_PATH, JSON.stringify(data, null, 2));
+    writeAtomic(STORE_PATH, JSON.stringify(data, null, 2));
   } catch (err) {
-    if (config.debug) console.error("[store] failed to flushSync:", err);
+    console.error("[store] failed to flushSync:", err);
   }
 }
 
@@ -167,8 +179,6 @@ export const store = {
     const b = bucket(chatId);
     if (!b.welcome) b.welcome = {};
     b.welcome.clean = clean;
-    if (!b.clean) b.clean = {};
-    b.clean.welcome = clean;
     persist();
   },
   setWelcomeMute(chatId: number, durationMs: number | null): void {
@@ -207,8 +217,6 @@ export const store = {
     const b = bucket(chatId);
     if (!b.goodbye) b.goodbye = {};
     b.goodbye.clean = clean;
-    if (!b.clean) b.clean = {};
-    b.clean.goodbye = clean;
     persist();
   },
   clearGoodbye(chatId: number): void {
@@ -611,11 +619,17 @@ export const store = {
     persist();
     return true;
   },
+  isFedBanned(fedId: string, userId: number): boolean {
+    return Boolean(data.fedBans[fedId]?.[String(userId)]);
+  },
   getFedBan(fedId: string, userId: number): FedBan | null {
     return data.fedBans[fedId]?.[String(userId)] ?? null;
   },
   getFedBans(fedId: string): FedBan[] {
     return Object.values(data.fedBans[fedId] ?? {});
+  },
+  getFedBanCount(fedId: string): number {
+    return Object.keys(data.fedBans[fedId] ?? {}).length;
   },
   getFedsForUser(userId: number): Federation[] {
     return Object.values(data.federations).filter(
@@ -628,6 +642,13 @@ export const store = {
     if (!data.users) data.users = {};
     if (!data.usernames) data.usernames = {};
     const firstName = user.firstName ?? user.first_name ?? "User";
+
+    // Clean up previous username index if username changed
+    const existing = data.users[String(user.id)];
+    if (existing?.username && existing.username.toLowerCase() !== user.username?.toLowerCase()) {
+      delete data.usernames[existing.username.toLowerCase()];
+    }
+
     data.users[String(user.id)] = {
       id: user.id,
       firstName,

@@ -7,7 +7,7 @@ HyperGriot is configured through environment variables, loaded from a `.env` fil
 | Variable | Required | Default | Description |
 | --- | :---: | --- | --- |
 | `BOT_TOKEN` | Yes | | Bot token from @BotFather |
-| `OWNERS` | Yes | | Comma-separated global-owner Telegram user IDs (for example, `111,222`) |
+| `OWNERS` | No | | Comma-separated global-owner Telegram user IDs (for example, `111,222`). Without this, no user has owner bypass privileges |
 | `DATA_DIR` | No | `./data` | Directory for the persistent store |
 | `DEBUG` | No | `0` | Set to `1` to enable verbose logging |
 | `WEBHOOK_DOMAIN` | No | | Set to enable webhook mode (for example, `bot.example.com`). Omit for long polling |

@@ -34,8 +34,13 @@ export const config = {
     domain: process.env.WEBHOOK_DOMAIN ?? "",
     port: process.env.WEBHOOK_PORT ? Number(process.env.WEBHOOK_PORT) : undefined,
     path: process.env.WEBHOOK_PATH ?? "/hypergriot",
+    secret: process.env.WEBHOOK_SECRET ?? "",
   },
 } as const;
+
+if (config.owners.size === 0 && process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+  console.warn("[hypergriot] OWNERS is not configured. No user will have global owner privileges.");
+}
 
 /** True when this Telegram user ID is a configured global owner. */
 export function isOwner(userId: number): boolean {
