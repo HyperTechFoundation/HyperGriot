@@ -1,7 +1,33 @@
-# HyperGriot
 
+<h1 align="center">
+HyperGriot
+</h1>
+
+<p align="center">
 HyperGriot is a modular, high-performance Telegram group-management bot built in TypeScript on the Telegram Bot API. It keeps group chats clean and organized, covering moderation, onboarding, governance, automated protection, federations, and audit logging.
+</p>
 
+<p align="center">
+  <a href="https://www.typescriptlang.org/">
+    <img src="https://img.shields.io/badge/TypeScript-Strict-1E1B2E?style=for-the-badge&logo=typescript&logoColor=8B7CF6" alt="TypeScript Strict">
+  </a> 
+  <a href="https://grammy.dev/">
+    <img src="https://img.shields.io/badge/grammY-Telegram-1E1B2E?style=for-the-badge&logo=telegram&logoColor=6C9EFF" alt="grammY Telegram">
+  </a> 
+  <a href="https://nodejs.org/">
+    <img src="https://img.shields.io/badge/Node.js-18%2B-1E1B2E?style=for-the-badge&logo=node.js&logoColor=7ED957" alt="Node.js 18+">
+  </a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/83-Tests-1E1B2E?style=for-the-badge&logo=vitest&logoColor=F59E9B" alt="83 Tests">
+  <img src="https://img.shields.io/badge/v0.5.0-beta-1E1B2E?style=for-the-badge&logo=git&logoColor=A78BFA" alt="Version v0.5.0-beta">
+  <img src="https://img.shields.io/badge/MIT-License-1E1B2E?style=for-the-badge&logo=opensourceinitiative&logoColor=F5D76E" alt="MIT License">
+</p>
+
+--- 
+
+## Introduction 
 Every moderation command runs through one **command-resolution engine** that detects how a target was referenced and resolves it to a Telegram user ID with zero extra API calls on the common path:
 
 ```
@@ -80,4 +106,4 @@ The v0.5.0-beta release passes 12 test suites and 83 tests under strict TypeScri
 
 ## License
 
-MIT.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
