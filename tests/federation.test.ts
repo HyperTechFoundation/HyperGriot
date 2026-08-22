@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { Context } from "grammy";
-import { networkComposer } from "../src/modules/network/index.js";
+import { federationModuleComposer } from "../src/modules/federation/index.js";
 import { store } from "../src/repository/store.js";
 import { invalidateAdminCache } from "../src/core/guards.js";
 
@@ -93,7 +93,7 @@ describe("network module (federation & log channel)", () => {
       text: "/newfed GlobalAlliance",
       from: OWNER_USER,
     });
-    await networkComposer.middleware()(newCtx, async () => {});
+    await federationModuleComposer.middleware()(newCtx, async () => {});
     expect(newReplies[0]?.text).toContain("Created federation <b>GlobalAlliance</b>");
 
     // Extract fedId
@@ -107,7 +107,7 @@ describe("network module (federation & log channel)", () => {
       chatId: CHAT_1,
       from: OWNER_USER,
     });
-    await networkComposer.middleware()(join1Ctx, async () => {});
+    await federationModuleComposer.middleware()(join1Ctx, async () => {});
     expect(join1Replies[0]?.text).toContain("Joined federation");
 
     // Join CHAT_2
@@ -116,7 +116,7 @@ describe("network module (federation & log channel)", () => {
       chatId: CHAT_2,
       from: OWNER_USER,
     });
-    await networkComposer.middleware()(join2Ctx, async () => {});
+    await federationModuleComposer.middleware()(join2Ctx, async () => {});
     expect(join2Replies[0]?.text).toContain("Joined federation");
 
     // Check fed subs
@@ -133,7 +133,7 @@ describe("network module (federation & log channel)", () => {
       chatId: CHAT_1,
       from: OWNER_USER,
     });
-    await networkComposer.middleware()(fbanCtx, async () => {});
+    await federationModuleComposer.middleware()(fbanCtx, async () => {});
 
     expect(fbanReplies[0]?.text).toContain("got fed-banned from TestFed.");
     expect(fbanReplies[0]?.text).toContain("Reason: Raiding networks");
@@ -158,7 +158,7 @@ describe("network module (federation & log channel)", () => {
       from: OWNER_USER,
     });
 
-    await networkComposer.middleware()(fbanCtx, async () => {});
+    await federationModuleComposer.middleware()(fbanCtx, async () => {});
 
     expect(fbanReplies[0]?.text).toContain("got fed-banned from PMFed.");
     expect(fbanReplies[0]?.text).toContain("Reason: PM Spammer");
@@ -177,7 +177,7 @@ describe("network module (federation & log channel)", () => {
       from: OWNER_USER,
     });
 
-    await networkComposer.middleware()(ctx, async () => {});
+    await federationModuleComposer.middleware()(ctx, async () => {});
     expect(replies[0]?.text).toContain("I can't do this in a private chat. Run it in a group.");
   });
 
@@ -186,7 +186,7 @@ describe("network module (federation & log channel)", () => {
       text: "/logchannel -100999999999",
       from: OWNER_USER,
     });
-    await networkComposer.middleware()(ctx, async () => {});
+    await federationModuleComposer.middleware()(ctx, async () => {});
     expect(replies[0]?.text).toContain("Moderation log channel set");
     expect(store.getLogChatId(CHAT_1)).toBe(-100999999999);
   });

@@ -37,4 +37,4 @@ A log channel is a chat that mirrors moderation actions for audit. When a log ch
 
 A log channel gives owners and network operators a single place to review everything that happens across one or many groups. For multi-group setups, point every group's log at the same channel to get a unified audit feed.
 
-Next: [Hygiene guide](hygiene.md).
+Next: [Cleanup guide](cleanup.md).

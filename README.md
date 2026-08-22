@@ -37,11 +37,11 @@ The engine classifies each command into one of four target types - reply, mentio
 ## Features
 
 - **Moderation** - ban, temp ban, silent ban, unban, mute, temp mute, silent mute, unmute, kick
-- **Onboarding** - welcome and goodbye messages with templating and buttons
-- **Governance** - pin, rules, notes, admin promotion and titles
-- **Protection** - antiflood, locks, filters, reports, warnings, approvals
-- **Network** - federations with cross-group bans, log channels
-- **Hygiene** - message purges, service-message cleanup, command disabling, forum-topic awareness
+- **Welcome** - welcome and goodbye messages with templating, buttons, and join verification
+- **Admin** - pin, rules, notes, admin promotion and titles
+- **Security** - antiflood, locks, filters, reports, warnings, approvals
+- **Federation** - federations with cross-group bans, log channels
+- **Cleanup** - message purges, service-message cleanup, command disabling, forum-topic awareness
 
 For the full command reference, see the [Command index](docs/reference/command-index.md).
 

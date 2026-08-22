@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { formatTemplate, parseButton } from "../src/modules/onboarding/index.js";
+import { formatTemplate, parseButton, welcomeComposer } from "../src/modules/welcome/index.js";
 
-describe("onboarding formatting and button parser", () => {
+describe("welcome formatting and button parser", () => {
   it("replaces template placeholders safely", () => {
     const user = {
       id: 12345,
@@ -39,7 +39,7 @@ describe("onboarding formatting and button parser", () => {
   });
 
   it("automatically bans fed-banned users when joining a federated group", async () => {
-    const { onboardingComposer } = await import("../src/modules/onboarding/index.js");
+    const { welcomeComposer } = await import("../src/modules/welcome/index.js");
     const { store } = await import("../src/repository/store.js");
     const { Context } = await import("grammy");
     const { vi } = await import("vitest");
@@ -79,7 +79,7 @@ describe("onboarding formatting and button parser", () => {
     } as any;
 
     const ctx = new Context(update as any, api, { id: 99999, first_name: "Bot", is_bot: true } as any);
-    await onboardingComposer.middleware()(ctx, async () => {});
+    await welcomeComposer.middleware()(ctx, async () => {});
 
     expect(apiCalls.some((c) => c.method === "banChatMember" && c.args[0] === CHAT_ID && c.args[1] === 55555)).toBe(true);
   });

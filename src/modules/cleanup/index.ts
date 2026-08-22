@@ -8,7 +8,7 @@ import { adminsOnly, botCanDelete, onlyGroups } from "../../core/guards.js";
 import { escapeHtml } from "../../core/formatting.js";
 import { store } from "../../repository/store.js";
 
-export const hygieneComposer = new Composer<Context>();
+export const cleanupComposer = new Composer<Context>();
 
 /** List of commands that can be disabled by group admins. */
 export const DISABLEABLE_COMMANDS: readonly string[] = [
@@ -35,7 +35,7 @@ export const DISABLEABLE_COMMANDS: readonly string[] = [
 
 // ── Clean Submodule ─────────────────────────────────────────────
 
-hygieneComposer.command("cleanservice", onlyGroups, adminsOnly, async (ctx) => {
+cleanupComposer.command("cleanservice", onlyGroups, adminsOnly, async (ctx) => {
   const arg = ctx.message?.text?.replace(/^\/cleanservice(@\w+)?\s*/i, "").trim().toLowerCase();
   if (arg !== "on" && arg !== "off") {
     const current = store.getCleanConfig(ctx.chat.id).service ? "on" : "off";
@@ -52,7 +52,7 @@ hygieneComposer.command("cleanservice", onlyGroups, adminsOnly, async (ctx) => {
   });
 });
 
-hygieneComposer.command("clean", onlyGroups, adminsOnly, async (ctx) => {
+cleanupComposer.command("clean", onlyGroups, adminsOnly, async (ctx) => {
   if (!(await botCanDelete(ctx))) {
     await ctx.reply("I need the **Delete Messages** right to do this.");
     return;
@@ -102,7 +102,7 @@ hygieneComposer.command("clean", onlyGroups, adminsOnly, async (ctx) => {
 
 // ── Disabling Submodule ─────────────────────────────────────────
 
-hygieneComposer.command("disable", onlyGroups, adminsOnly, async (ctx) => {
+cleanupComposer.command("disable", onlyGroups, adminsOnly, async (ctx) => {
   const cmd = ctx.message?.text?.replace(/^\/disable(@\w+)?\s*/i, "").trim().toLowerCase().replace(/^\//, "");
   if (!cmd) {
     await ctx.reply("Usage: <code>/disable &lt;command&gt;</code>", { parse_mode: "HTML" });
@@ -121,7 +121,7 @@ hygieneComposer.command("disable", onlyGroups, adminsOnly, async (ctx) => {
   await ctx.reply(`Disabled <code>/${escapeHtml(cmd)}</code> for non-admins.`, { parse_mode: "HTML" });
 });
 
-hygieneComposer.command("enable", onlyGroups, adminsOnly, async (ctx) => {
+cleanupComposer.command("enable", onlyGroups, adminsOnly, async (ctx) => {
   const cmd = ctx.message?.text?.replace(/^\/enable(@\w+)?\s*/i, "").trim().toLowerCase().replace(/^\//, "");
   if (!cmd) {
     await ctx.reply("Usage: <code>/enable &lt;command&gt;</code>", { parse_mode: "HTML" });
@@ -136,12 +136,12 @@ hygieneComposer.command("enable", onlyGroups, adminsOnly, async (ctx) => {
   }
 });
 
-hygieneComposer.command("enableall", onlyGroups, adminsOnly, async (ctx) => {
+cleanupComposer.command("enableall", onlyGroups, adminsOnly, async (ctx) => {
   store.enableAllCommands(ctx.chat.id);
   await ctx.reply("All commands have been re-enabled in this group.");
 });
 
-hygieneComposer.command("disabled", onlyGroups, async (ctx) => {
+cleanupComposer.command("disabled", onlyGroups, async (ctx) => {
   const disabled = store.getDisabledCommands(ctx.chat.id);
   if (disabled.length === 0) {
     await ctx.reply("No commands are currently disabled in this group.");
@@ -152,14 +152,14 @@ hygieneComposer.command("disabled", onlyGroups, async (ctx) => {
   await ctx.reply(`<b>Disabled commands in this chat:</b>\n\n${list}`, { parse_mode: "HTML" });
 });
 
-hygieneComposer.command("disableable", onlyGroups, async (ctx) => {
+cleanupComposer.command("disableable", onlyGroups, async (ctx) => {
   const list = DISABLEABLE_COMMANDS.map((c) => `• <code>/${escapeHtml(c)}</code>`).join("\n");
   await ctx.reply(`<b>Commands that can be disabled:</b>\n\n${list}`, { parse_mode: "HTML" });
 });
 
 // ── Auto-Clean Service Messages Interceptor ─────────────────────
 
-hygieneComposer.on("message", async (ctx, next) => {
+cleanupComposer.on("message", async (ctx, next) => {
   if (!ctx.chat || ctx.chat.type === "private") {
     return next();
   }
@@ -198,7 +198,7 @@ hygieneComposer.on("message", async (ctx, next) => {
   return next();
 });
 
-/** Register the hygiene module on a bot instance. */
-export function registerHygiene(bot: { use: (c: Composer<Context>) => void }): void {
-  bot.use(hygieneComposer);
+/** Register the cleanup module on a bot instance. */
+export function registerCleanup(bot: { use: (c: Composer<Context>) => void }): void {
+  bot.use(cleanupComposer);
 }

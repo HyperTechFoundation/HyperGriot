@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { Context } from "grammy";
-import { detectMessageLockTypes, protectionComposer } from "../src/modules/protection/index.js";
+import { detectMessageLockTypes, securityComposer } from "../src/modules/security/index.js";
 import { store } from "../src/repository/store.js";
 import { invalidateAdminCache } from "../src/core/guards.js";
 
@@ -101,12 +101,12 @@ describe("protection module", () => {
 
   it("locks and unlocks types", async () => {
     const { ctx: lockCtx, replies: lockReplies } = createMockContext({ text: "/lock stickers" });
-    await protectionComposer.middleware()(lockCtx, async () => {});
+    await securityComposer.middleware()(lockCtx, async () => {});
     expect(lockReplies[0]?.text).toContain("Locked <b>stickers</b>");
     expect(store.isLocked(CHAT_ID, "stickers")).toBe(true);
 
     const { ctx: unlockCtx, replies: unlockReplies } = createMockContext({ text: "/unlock stickers" });
-    await protectionComposer.middleware()(unlockCtx, async () => {});
+    await securityComposer.middleware()(unlockCtx, async () => {});
     expect(unlockReplies[0]?.text).toContain("Unlocked <b>stickers</b>");
     expect(store.isLocked(CHAT_ID, "stickers")).toBe(false);
   });
@@ -117,7 +117,7 @@ describe("protection module", () => {
       from: REGULAR_USER,
       msgProps: { sticker: { file_id: "xyz" } },
     });
-    await protectionComposer.middleware()(ctx, async () => {});
+    await securityComposer.middleware()(ctx, async () => {});
     expect(apiCalls.some((c) => c.method === "deleteMessage")).toBe(true);
   });
 
@@ -128,7 +128,7 @@ describe("protection module", () => {
       from: REGULAR_USER,
       msgProps: { sticker: { file_id: "xyz" } },
     });
-    await protectionComposer.middleware()(ctx, async () => {});
+    await securityComposer.middleware()(ctx, async () => {});
     expect(apiCalls.some((c) => c.method === "deleteMessage")).toBe(false);
   });
 
@@ -141,7 +141,7 @@ describe("protection module", () => {
       text: "/warn Bad behavior",
       replyTo: REGULAR_USER,
     });
-    await protectionComposer.middleware()(w1Ctx, async () => {});
+    await securityComposer.middleware()(w1Ctx, async () => {});
     expect(w1Replies[0]?.text).toContain("has been warned (1/2)");
     expect(w1Calls.some((c) => c.method === "banChatMember")).toBe(false);
 
@@ -150,7 +150,7 @@ describe("protection module", () => {
       text: "/warn Bad behavior 2",
       replyTo: REGULAR_USER,
     });
-    await protectionComposer.middleware()(w2Ctx, async () => {});
+    await securityComposer.middleware()(w2Ctx, async () => {});
     expect(w2Replies[0]?.text).toContain("has been warned (2/2)");
     expect(w2Calls.some((c) => c.method === "banChatMember")).toBe(true);
   });
@@ -161,7 +161,7 @@ describe("protection module", () => {
       from: REGULAR_USER,
       text: "Is this crypto safe?",
     });
-    await protectionComposer.middleware()(ctx, async () => {});
+    await securityComposer.middleware()(ctx, async () => {});
     expect(replies[0]?.text).toContain("Scam warning: beware of fake crypto!");
   });
 
@@ -169,14 +169,14 @@ describe("protection module", () => {
     const { ctx: appCtx, replies: appReplies } = createMockContext({
       text: `/approve ${REGULAR_USER.id}`,
     });
-    await protectionComposer.middleware()(appCtx, async () => {});
+    await securityComposer.middleware()(appCtx, async () => {});
     expect(appReplies[0]?.text).toContain("approved");
     expect(store.isApproved(CHAT_ID, REGULAR_USER.id)).toBe(true);
 
     const { ctx: unappCtx, replies: unappReplies } = createMockContext({
       text: `/unapprove ${REGULAR_USER.id}`,
     });
-    await protectionComposer.middleware()(unappCtx, async () => {});
+    await securityComposer.middleware()(unappCtx, async () => {});
     expect(unappReplies[0]?.text).toContain("no longer approved");
     expect(store.isApproved(CHAT_ID, REGULAR_USER.id)).toBe(false);
   });

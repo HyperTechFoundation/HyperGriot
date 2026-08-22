@@ -1,6 +1,6 @@
-# Hygiene guide
+# Cleanup guide
 
-Hygiene features keep a group tidy: bulk message purges, automatic cleanup of service messages, per-group command disabling, and forum-topic awareness.
+Cleanup features keep a group tidy: bulk message purges, automatic cleanup of service messages, per-group command disabling, and forum-topic awareness.
 
 ## Message cleanup
 

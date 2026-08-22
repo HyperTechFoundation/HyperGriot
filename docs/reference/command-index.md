@@ -109,7 +109,7 @@ A complete reference of every HyperGriot command. Remember that `!` works in pla
 | `/fedpromote <target>` | Promote a user to federation admin | Yes |
 | `/feddemote <target>` | Demote a federation admin | Yes |
 
-## Log channels and hygiene
+## Log channels and cleanup
 
 | Command | Description |
 | --- | --- |

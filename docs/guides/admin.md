@@ -1,6 +1,6 @@
-# Governance guide
+# Admin guide
 
-Governance covers pinned messages, group rules, notes, and admin management.
+Admin covers pinned messages, group rules, notes, and admin management.
 
 ## Pin
 
@@ -66,4 +66,4 @@ Required right: Promote admins (`can_promote_members`).
 > [!TIP]
 > `/promote` uses a relaxed target guard, so you can re-promote an existing admin to adjust their permission flags or grant topic-management rights without triggering an error.
 
-Next: [Protection guide](protection.md).
+Next: [Security guide](security.md).

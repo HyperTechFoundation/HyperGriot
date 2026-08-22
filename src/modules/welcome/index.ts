@@ -12,7 +12,7 @@ import { parseTime } from "../../core/time.js";
 import { store } from "../../repository/store.js";
 import type { InlineUrlButton } from "../../types/index.js";
 
-export const onboardingComposer = new Composer<Context>();
+export const welcomeComposer = new Composer<Context>();
 
 // Track previous welcome/goodbye message IDs for cleanwelcome / cleangoodbye
 const lastWelcomeMsg = new Map<number, number>(); // chatId -> messageId
@@ -62,7 +62,7 @@ export function parseButton(input: string): InlineUrlButton | null {
 
 // ── Welcome Commands ────────────────────────────────────────────
 
-onboardingComposer.command("setwelcome", onlyGroups, adminsOnly, async (ctx) => {
+welcomeComposer.command("setwelcome", onlyGroups, adminsOnly, async (ctx) => {
   let text = "";
   if (ctx.message?.reply_to_message?.text) {
     text = ctx.message.reply_to_message.text;
@@ -82,7 +82,7 @@ onboardingComposer.command("setwelcome", onlyGroups, adminsOnly, async (ctx) => 
   await ctx.reply("Welcome message updated.");
 });
 
-onboardingComposer.command("welcome", onlyGroups, async (ctx) => {
+welcomeComposer.command("welcome", onlyGroups, async (ctx) => {
   const args = ctx.message?.text?.replace(/^\/welcome(@\w+)?\s*/i, "").trim().toLowerCase();
 
   // If argument is on/off, toggle (admin only)
@@ -123,7 +123,7 @@ onboardingComposer.command("welcome", onlyGroups, async (ctx) => {
   );
 });
 
-onboardingComposer.command("welcomebutton", onlyGroups, adminsOnly, async (ctx) => {
+welcomeComposer.command("welcomebutton", onlyGroups, adminsOnly, async (ctx) => {
   const args = ctx.message?.text?.replace(/^\/welcomebutton(@\w+)?\s*/i, "").trim() || "";
   if (!args || args.toLowerCase() === "clear") {
     store.setWelcomeButtons(ctx.chat.id, []);
@@ -143,7 +143,7 @@ onboardingComposer.command("welcomebutton", onlyGroups, adminsOnly, async (ctx) 
   await ctx.reply(`Welcome button set: [${escapeHtml(btn.text)}](${escapeHtml(btn.url)})`);
 });
 
-onboardingComposer.command("cleanwelcome", onlyGroups, adminsOnly, async (ctx) => {
+welcomeComposer.command("cleanwelcome", onlyGroups, adminsOnly, async (ctx) => {
   const args = ctx.message?.text?.replace(/^\/cleanwelcome(@\w+)?\s*/i, "").trim().toLowerCase();
   if (args !== "on" && args !== "off") {
     const current = store.getWelcome(ctx.chat.id).clean ? "on" : "off";
@@ -157,7 +157,7 @@ onboardingComposer.command("cleanwelcome", onlyGroups, adminsOnly, async (ctx) =
   await ctx.reply(`Clean welcome is now ${enabled ? "enabled" : "disabled"}.`);
 });
 
-onboardingComposer.command("welcomemute", onlyGroups, adminsOnly, async (ctx) => {
+welcomeComposer.command("welcomemute", onlyGroups, adminsOnly, async (ctx) => {
   const args = ctx.message?.text?.replace(/^\/welcomemute(@\w+)?\s*/i, "").trim().toLowerCase();
   if (!args || args === "off") {
     store.setWelcomeMute(ctx.chat.id, null);
@@ -177,14 +177,14 @@ onboardingComposer.command("welcomemute", onlyGroups, adminsOnly, async (ctx) =>
   await ctx.reply(`New members will be muted for ${parsed.label} upon joining.`);
 });
 
-onboardingComposer.command("clearwelcome", onlyGroups, adminsOnly, async (ctx) => {
+welcomeComposer.command("clearwelcome", onlyGroups, adminsOnly, async (ctx) => {
   store.clearWelcome(ctx.chat.id);
   await ctx.reply("Welcome configuration has been reset to defaults.");
 });
 
 // ── Goodbye Commands ────────────────────────────────────────────
 
-onboardingComposer.command("setgoodbye", onlyGroups, adminsOnly, async (ctx) => {
+welcomeComposer.command("setgoodbye", onlyGroups, adminsOnly, async (ctx) => {
   let text = "";
   if (ctx.message?.reply_to_message?.text) {
     text = ctx.message.reply_to_message.text;
@@ -201,7 +201,7 @@ onboardingComposer.command("setgoodbye", onlyGroups, adminsOnly, async (ctx) => 
   await ctx.reply("Goodbye message updated.");
 });
 
-onboardingComposer.command("goodbye", onlyGroups, async (ctx) => {
+welcomeComposer.command("goodbye", onlyGroups, async (ctx) => {
   const args = ctx.message?.text?.replace(/^\/goodbye(@\w+)?\s*/i, "").trim().toLowerCase();
 
   if (args === "on" || args === "off") {
@@ -228,7 +228,7 @@ onboardingComposer.command("goodbye", onlyGroups, async (ctx) => {
   await ctx.reply(`<b>Goodbye message (${status}):</b>\n\n${preview}`, { parse_mode: "HTML" });
 });
 
-onboardingComposer.command("cleangoodbye", onlyGroups, adminsOnly, async (ctx) => {
+welcomeComposer.command("cleangoodbye", onlyGroups, adminsOnly, async (ctx) => {
   const args = ctx.message?.text?.replace(/^\/cleangoodbye(@\w+)?\s*/i, "").trim().toLowerCase();
   if (args !== "on" && args !== "off") {
     const current = store.getGoodbye(ctx.chat.id).clean ? "on" : "off";
@@ -242,14 +242,14 @@ onboardingComposer.command("cleangoodbye", onlyGroups, adminsOnly, async (ctx) =
   await ctx.reply(`Clean goodbye is now ${enabled ? "enabled" : "disabled"}.`);
 });
 
-onboardingComposer.command("cleargoodbye", onlyGroups, adminsOnly, async (ctx) => {
+welcomeComposer.command("cleargoodbye", onlyGroups, adminsOnly, async (ctx) => {
   store.clearGoodbye(ctx.chat.id);
   await ctx.reply("Goodbye configuration has been reset to defaults.");
 });
 
 // ── Join / Leave Event Listeners ─────────────────────────────────
 
-onboardingComposer.on("message:new_chat_members", async (ctx) => {
+welcomeComposer.on("message:new_chat_members", async (ctx) => {
   const newMembers = ctx.message.new_chat_members;
   const cfg = store.getWelcome(ctx.chat.id);
 
@@ -342,7 +342,7 @@ onboardingComposer.on("message:new_chat_members", async (ctx) => {
   }
 });
 
-onboardingComposer.on("message:left_chat_member", async (ctx) => {
+welcomeComposer.on("message:left_chat_member", async (ctx) => {
   const member = ctx.message.left_chat_member;
   if (member.is_bot && member.id === ctx.me.id) return;
 
@@ -376,7 +376,7 @@ onboardingComposer.on("message:left_chat_member", async (ctx) => {
   }
 });
 
-/** Register the onboarding module on a bot instance. */
-export function registerOnboarding(bot: { use: (c: Composer<Context>) => void }): void {
-  bot.use(onboardingComposer);
+/** Register the welcome module on a bot instance. */
+export function registerWelcome(bot: { use: (c: Composer<Context>) => void }): void {
+  bot.use(welcomeComposer);
 }

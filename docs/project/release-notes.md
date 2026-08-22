@@ -64,13 +64,13 @@ The release is validated with TypeScript strict typechecking and the Vitest suit
 | --- | :---: | --- |
 | `target.test.ts` | 16 | Entity, cache, store, token, and reply resolution |
 | `moderation.test.ts` | 7 | Ban, tban, sban, unban, mute, tmute, smute, kick |
-| `governance.test.ts` | 6 | Pin, rules, notes, hashtag invocation, promote, adminlist |
-| `protection.test.ts` | 7 | Locks, filters, antiflood, warnings, approvals |
-| `network.test.ts` | 5 | Federation lifecycle, fban/unfban fan-out, PM commands |
-| `onboarding.test.ts` | 5 | Welcome and goodbye templating, buttons, join fedban check |
+| `admin.test.ts` | 6 | Pin, rules, notes, hashtag invocation, promote, adminlist |
+| `security.test.ts` | 7 | Locks, filters, antiflood, warnings, approvals |
+| `federation.test.ts` | 5 | Federation lifecycle, fban/unfban fan-out, PM commands |
+| `welcome.test.ts` | 5 | Welcome and goodbye templating, buttons, join fedban check |
 | `help.test.ts` | 9 | Three-column layout, HTML escaping, category transitions |
 | `prefix.test.ts` | 5 | Dual-prefix normalization and bot-tag preservation |
-| `hygiene.test.ts` | 4 | Bulk clean, command disabling, service-message deletion |
+| `cleanup.test.ts` | 4 | Bulk clean, command disabling, service-message deletion |
 | `store.test.ts` | 7 | JSON persistence, schema buckets, serialization |
 | `time.test.ts` | 5 | Time-token parsing |
 | `formatting.test.ts` | 7 | HTML card generators, user-link formatting |

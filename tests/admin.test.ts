@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { Context } from "grammy";
-import { governanceComposer } from "../src/modules/governance/index.js";
+import { adminComposer } from "../src/modules/admin/index.js";
 import { store } from "../src/repository/store.js";
 import { invalidateAdminCache } from "../src/core/guards.js";
 
@@ -77,49 +77,49 @@ beforeEach(() => {
 describe("governance module", () => {
   it("pins a message silently by default", async () => {
     const { ctx, replies, apiCalls } = createMockContext("/pin", { message_id: 42, text: "Important announcement" });
-    await governanceComposer.middleware()(ctx, async () => {});
+    await adminComposer.middleware()(ctx, async () => {});
     expect(apiCalls.some((c) => c.method === "pinChatMessage" && c.args[1] === 42 && c.args[2]?.disable_notification === true)).toBe(true);
     expect(replies[0]?.text).toContain("silently");
   });
 
   it("pins a message loudly when loud is specified", async () => {
     const { ctx, replies, apiCalls } = createMockContext("/pin loud", { message_id: 42, text: "Loud" });
-    await governanceComposer.middleware()(ctx, async () => {});
+    await adminComposer.middleware()(ctx, async () => {});
     expect(apiCalls.some((c) => c.method === "pinChatMessage" && c.args[1] === 42 && c.args[2]?.disable_notification === false)).toBe(true);
     expect(replies[0]?.text).toContain("with notification");
   });
 
   it("sets and retrieves rules", async () => {
     const { ctx: setCtx, replies: setReplies } = createMockContext("/setrules 1. Be kind\n2. No spam");
-    await governanceComposer.middleware()(setCtx, async () => {});
+    await adminComposer.middleware()(setCtx, async () => {});
     expect(setReplies[0]?.text).toContain("updated");
 
     const { ctx: getCtx, replies: getReplies } = createMockContext("/rules");
-    await governanceComposer.middleware()(getCtx, async () => {});
+    await adminComposer.middleware()(getCtx, async () => {});
     expect(getReplies[0]?.text).toContain("1. Be kind");
   });
 
   it("saves and lists notes", async () => {
     const { ctx: saveCtx, replies: saveReplies } = createMockContext("/save rules Please read /rules");
-    await governanceComposer.middleware()(saveCtx, async () => {});
+    await adminComposer.middleware()(saveCtx, async () => {});
     expect(saveReplies[0]?.text).toContain("Saved note");
 
     const { ctx: listCtx, replies: listReplies } = createMockContext("/notes");
-    await governanceComposer.middleware()(listCtx, async () => {});
+    await adminComposer.middleware()(listCtx, async () => {});
     expect(listReplies[0]?.text).toContain("#rules");
   });
 
   it("promotes a user including existing administrators to update rights", async () => {
     // 10001 is ADMIN_USER who is already in getChatAdministrators
     const { ctx, replies, apiCalls } = createMockContext("/promote 10001");
-    await governanceComposer.middleware()(ctx, async () => {});
+    await adminComposer.middleware()(ctx, async () => {});
     expect(apiCalls.some((c) => c.method === "promoteChatMember" && c.args[1] === 10001)).toBe(true);
     expect(replies[0]?.text).toContain("Successfully promoted");
   });
 
   it("lists admins nicely formatted", async () => {
     const { ctx, replies } = createMockContext("/adminlist");
-    await governanceComposer.middleware()(ctx, async () => {});
+    await adminComposer.middleware()(ctx, async () => {});
     expect(replies[0]?.text).toContain("Administrators for Test Group");
     expect(replies[0]?.text).toContain("Founder");
   });

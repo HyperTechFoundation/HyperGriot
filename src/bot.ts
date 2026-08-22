@@ -14,11 +14,11 @@ import {
 import { invalidateAdminCache } from "./core/guards.js";
 import { helpComposer } from "./core/help.js";
 import { registerModeration } from "./modules/moderation/index.js";
-import { registerOnboarding } from "./modules/onboarding/index.js";
-import { registerGovernance } from "./modules/governance/index.js";
-import { registerProtection } from "./modules/protection/index.js";
-import { registerNetwork } from "./modules/network/index.js";
-import { registerHygiene } from "./modules/hygiene/index.js";
+import { registerWelcome } from "./modules/welcome/index.js";
+import { registerAdmin } from "./modules/admin/index.js";
+import { registerSecurity } from "./modules/security/index.js";
+import { registerFederation } from "./modules/federation/index.js";
+import { registerCleanup } from "./modules/cleanup/index.js";
 
 export function createBot(): Bot {
   const bot = new Bot(config.botToken);
@@ -58,11 +58,11 @@ export function createBot(): Bot {
 
   // ── Feature Modules ───────────────────────────────────────────────
   registerModeration(bot);
-  registerOnboarding(bot);
-  registerGovernance(bot);
-  registerProtection(bot);
-  registerNetwork(bot);
-  registerHygiene(bot);
+  registerWelcome(bot);
+  registerAdmin(bot);
+  registerSecurity(bot);
+  registerFederation(bot);
+  registerCleanup(bot);
 
   return bot;
 }

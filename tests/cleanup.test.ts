@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { Context } from "grammy";
-import { hygieneComposer } from "../src/modules/hygiene/index.js";
+import { cleanupComposer } from "../src/modules/cleanup/index.js";
 import { store } from "../src/repository/store.js";
 import { invalidateAdminCache } from "../src/core/guards.js";
 
@@ -80,12 +80,12 @@ beforeEach(() => {
 describe("hygiene module (clean, disabling, service messages)", () => {
   it("enables and disables cleanservice", async () => {
     const { ctx: onCtx, replies: onReplies } = createMockContext({ text: "/cleanservice on" });
-    await hygieneComposer.middleware()(onCtx, async () => {});
+    await cleanupComposer.middleware()(onCtx, async () => {});
     expect(onReplies[0]?.text).toContain("Clean service messages is now <b>enabled</b>");
     expect(store.getCleanConfig(CHAT_ID).service).toBe(true);
 
     const { ctx: offCtx, replies: offReplies } = createMockContext({ text: "/cleanservice off" });
-    await hygieneComposer.middleware()(offCtx, async () => {});
+    await cleanupComposer.middleware()(offCtx, async () => {});
     expect(offReplies[0]?.text).toContain("Clean service messages is now <b>disabled</b>");
     expect(store.getCleanConfig(CHAT_ID).service).toBe(false);
   });
@@ -96,18 +96,18 @@ describe("hygiene module (clean, disabling, service messages)", () => {
       from: REGULAR_USER,
       msgProps: { left_chat_member: REGULAR_USER },
     });
-    await hygieneComposer.middleware()(ctx, async () => {});
+    await cleanupComposer.middleware()(ctx, async () => {});
     expect(apiCalls.some((c) => c.method === "deleteMessage")).toBe(true);
   });
 
   it("disables and enables commands", async () => {
     const { ctx: disCtx, replies: disReplies } = createMockContext({ text: "/disable rules" });
-    await hygieneComposer.middleware()(disCtx, async () => {});
+    await cleanupComposer.middleware()(disCtx, async () => {});
     expect(disReplies[0]?.text).toContain("Disabled <code>/rules</code>");
     expect(store.getDisabledCommands(CHAT_ID)).toContain("rules");
 
     const { ctx: enCtx, replies: enReplies } = createMockContext({ text: "/enable rules" });
-    await hygieneComposer.middleware()(enCtx, async () => {});
+    await cleanupComposer.middleware()(enCtx, async () => {});
     expect(enReplies[0]?.text).toContain("Re-enabled <code>/rules</code>");
     expect(store.getDisabledCommands(CHAT_ID)).not.toContain("rules");
   });
@@ -117,7 +117,7 @@ describe("hygiene module (clean, disabling, service messages)", () => {
       text: "/clean 5",
       replyTo: { message_id: 50 },
     });
-    await hygieneComposer.middleware()(ctx, async () => {});
+    await cleanupComposer.middleware()(ctx, async () => {});
     expect(apiCalls.filter((c) => c.method === "deleteMessage").length).toBeGreaterThanOrEqual(5);
   });
 });

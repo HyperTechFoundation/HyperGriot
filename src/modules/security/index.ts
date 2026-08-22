@@ -25,7 +25,7 @@ import {
   type WarnAction,
 } from "../../types/index.js";
 
-export const protectionComposer = new Composer<Context>();
+export const securityComposer = new Composer<Context>();
 
 // ── In-Memory Flood Tracker ─────────────────────────────────────
 interface FloodEntry {
@@ -157,7 +157,7 @@ async function executePunishment(
 
 // ── Locks Submodule ─────────────────────────────────────────────
 
-protectionComposer.command("lock", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("lock", onlyGroups, adminsOnly, async (ctx) => {
   const arg = ctx.message?.text?.replace(/^\/lock(@\w+)?\s*/i, "").trim().toLowerCase() as LockType;
   if (!arg || !ALL_LOCK_TYPES.includes(arg)) {
     await ctx.reply(`Invalid lock type. Available types:\n<code>${ALL_LOCK_TYPES.join(", ")}</code>`, {
@@ -172,7 +172,7 @@ protectionComposer.command("lock", onlyGroups, adminsOnly, async (ctx) => {
   });
 });
 
-protectionComposer.command("unlock", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("unlock", onlyGroups, adminsOnly, async (ctx) => {
   const arg = ctx.message?.text?.replace(/^\/unlock(@\w+)?\s*/i, "").trim().toLowerCase() as LockType;
   if (!arg || !ALL_LOCK_TYPES.includes(arg)) {
     await ctx.reply(`Invalid lock type. Available types:\n<code>${ALL_LOCK_TYPES.join(", ")}</code>`, {
@@ -185,7 +185,7 @@ protectionComposer.command("unlock", onlyGroups, adminsOnly, async (ctx) => {
   await ctx.reply(`Unlocked <b>${escapeHtml(arg)}</b>.`, { parse_mode: "HTML" });
 });
 
-protectionComposer.command("locks", onlyGroups, async (ctx) => {
+securityComposer.command("locks", onlyGroups, async (ctx) => {
   const locks = store.getLocks(ctx.chat.id);
   if (locks.size === 0) {
     await ctx.reply("No locks currently active in this group.");
@@ -200,17 +200,17 @@ protectionComposer.command("locks", onlyGroups, async (ctx) => {
   });
 });
 
-protectionComposer.command("lockall", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("lockall", onlyGroups, adminsOnly, async (ctx) => {
   store.lockAll(ctx.chat.id, ALL_LOCK_TYPES);
   await ctx.reply("All message types and permissions have been locked.");
 });
 
-protectionComposer.command("unlockall", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("unlockall", onlyGroups, adminsOnly, async (ctx) => {
   store.unlockAll(ctx.chat.id);
   await ctx.reply("All locks have been cleared.");
 });
 
-protectionComposer.command("locktypes", onlyGroups, async (ctx) => {
+securityComposer.command("locktypes", onlyGroups, async (ctx) => {
   await ctx.reply(`<b>Lockable types:</b>\n<code>${ALL_LOCK_TYPES.join(", ")}</code>`, {
     parse_mode: "HTML",
   });
@@ -218,7 +218,7 @@ protectionComposer.command("locktypes", onlyGroups, async (ctx) => {
 
 // ── Filters Submodule ───────────────────────────────────────────
 
-protectionComposer.command("filter", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("filter", onlyGroups, adminsOnly, async (ctx) => {
   const raw = ctx.message?.text?.replace(/^\/filter(@\w+)?\s*/i, "").trim() || "";
   if (!raw) {
     await ctx.reply("Usage: <code>/filter &lt;trigger&gt; &lt;reply&gt;</code>", {
@@ -242,7 +242,7 @@ protectionComposer.command("filter", onlyGroups, adminsOnly, async (ctx) => {
   });
 });
 
-protectionComposer.command("stop", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("stop", onlyGroups, adminsOnly, async (ctx) => {
   const trigger = ctx.message?.text?.replace(/^\/stop(@\w+)?\s*/i, "").trim() || "";
   if (!trigger) {
     await ctx.reply("Usage: /stop <trigger>");
@@ -257,12 +257,12 @@ protectionComposer.command("stop", onlyGroups, adminsOnly, async (ctx) => {
   }
 });
 
-protectionComposer.command("stopall", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("stopall", onlyGroups, adminsOnly, async (ctx) => {
   store.clearFilters(ctx.chat.id);
   await ctx.reply("All filters have been removed.");
 });
 
-protectionComposer.command("filters", onlyGroups, async (ctx) => {
+securityComposer.command("filters", onlyGroups, async (ctx) => {
   const filters = store.getFilters(ctx.chat.id);
   const keys = Object.keys(filters);
   if (keys.length === 0) {
@@ -276,7 +276,7 @@ protectionComposer.command("filters", onlyGroups, async (ctx) => {
 
 // ── Antiflood Submodule ─────────────────────────────────────────
 
-protectionComposer.command("setflood", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("setflood", onlyGroups, adminsOnly, async (ctx) => {
   const arg = ctx.message?.text?.replace(/^\/setflood(@\w+)?\s*/i, "").trim().toLowerCase();
   if (!arg || arg === "off") {
     store.setFloodLimit(ctx.chat.id, 0);
@@ -296,7 +296,7 @@ protectionComposer.command("setflood", onlyGroups, adminsOnly, async (ctx) => {
   await ctx.reply(`Antiflood limit set to <b>${limit} messages / 5s</b>.`, { parse_mode: "HTML" });
 });
 
-protectionComposer.command("flood", onlyGroups, async (ctx) => {
+securityComposer.command("flood", onlyGroups, async (ctx) => {
   const cfg = store.getFloodConfig(ctx.chat.id);
   if (cfg.limit <= 0) {
     await ctx.reply("Antiflood is currently <b>disabled</b>.", { parse_mode: "HTML" });
@@ -308,7 +308,7 @@ protectionComposer.command("flood", onlyGroups, async (ctx) => {
   }
 });
 
-protectionComposer.command("setfloodmode", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("setfloodmode", onlyGroups, adminsOnly, async (ctx) => {
   const mode = ctx.message?.text?.replace(/^\/setfloodmode(@\w+)?\s*/i, "").trim().toLowerCase() as FloodMode;
   const validModes: FloodMode[] = ["mute", "ban", "kick", "tmute", "tban"];
   if (!mode || !validModes.includes(mode)) {
@@ -324,7 +324,7 @@ protectionComposer.command("setfloodmode", onlyGroups, adminsOnly, async (ctx) =
 
 // ── Warnings Submodule ──────────────────────────────────────────
 
-protectionComposer.command("warn", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("warn", onlyGroups, adminsOnly, async (ctx) => {
   const target = await resolveTarget(ctx);
   const targetErr = await assertTarget(ctx, target);
   if (targetErr) {
@@ -360,7 +360,7 @@ protectionComposer.command("warn", onlyGroups, adminsOnly, async (ctx) => {
   }
 });
 
-protectionComposer.command("warns", onlyGroups, async (ctx) => {
+securityComposer.command("warns", onlyGroups, async (ctx) => {
   const target = await resolveTarget(ctx);
   const targetId = target.userId ?? ctx.from?.id;
   if (!targetId) {
@@ -384,7 +384,7 @@ protectionComposer.command("warns", onlyGroups, async (ctx) => {
   );
 });
 
-protectionComposer.command("resetwarn", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("resetwarn", onlyGroups, adminsOnly, async (ctx) => {
   const target = await resolveTarget(ctx);
   if (target.userId === null) {
     if (target.username) {
@@ -400,7 +400,7 @@ protectionComposer.command("resetwarn", onlyGroups, adminsOnly, async (ctx) => {
   await ctx.reply(`Warnings reset for ${userLink(info)}.`, { parse_mode: "HTML" });
 });
 
-protectionComposer.command("rmwarn", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("rmwarn", onlyGroups, adminsOnly, async (ctx) => {
   const target = await resolveTarget(ctx);
   if (target.userId === null) {
     if (target.username) {
@@ -419,7 +419,7 @@ protectionComposer.command("rmwarn", onlyGroups, adminsOnly, async (ctx) => {
   );
 });
 
-protectionComposer.command("strongwarn", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("strongwarn", onlyGroups, adminsOnly, async (ctx) => {
   const arg = ctx.message?.text?.replace(/^\/strongwarn(@\w+)?\s*/i, "").trim().toLowerCase();
   if (arg !== "on" && arg !== "off") {
     const isStrong = store.getWarnConfig(ctx.chat.id).strong;
@@ -436,7 +436,7 @@ protectionComposer.command("strongwarn", onlyGroups, adminsOnly, async (ctx) => 
   });
 });
 
-protectionComposer.command("setwarnlimit", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("setwarnlimit", onlyGroups, adminsOnly, async (ctx) => {
   const arg = ctx.message?.text?.replace(/^\/setwarnlimit(@\w+)?\s*/i, "").trim();
   const limit = parseInt(arg || "", 10);
   if (isNaN(limit) || limit < 1) {
@@ -450,7 +450,7 @@ protectionComposer.command("setwarnlimit", onlyGroups, adminsOnly, async (ctx) =
   await ctx.reply(`Warning limit set to <b>${limit}</b>.`, { parse_mode: "HTML" });
 });
 
-protectionComposer.command("setwarnaction", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("setwarnaction", onlyGroups, adminsOnly, async (ctx) => {
   const action = ctx.message?.text?.replace(/^\/setwarnaction(@\w+)?\s*/i, "").trim().toLowerCase() as WarnAction;
   const validActions: WarnAction[] = ["mute", "kick", "ban", "tmute", "tban"];
   if (!action || !validActions.includes(action)) {
@@ -466,7 +466,7 @@ protectionComposer.command("setwarnaction", onlyGroups, adminsOnly, async (ctx) 
 
 // ── Reports Submodule ───────────────────────────────────────────
 
-protectionComposer.command("report", onlyGroups, async (ctx) => {
+securityComposer.command("report", onlyGroups, async (ctx) => {
   if (!store.isReportsEnabled(ctx.chat.id)) {
     return;
   }
@@ -496,7 +496,7 @@ protectionComposer.command("report", onlyGroups, async (ctx) => {
   }
 });
 
-protectionComposer.command("reports", onlyGroups, async (ctx) => {
+securityComposer.command("reports", onlyGroups, async (ctx) => {
   const args = ctx.message?.text?.replace(/^\/reports(@\w+)?\s*/i, "").trim().toLowerCase();
   if (args === "on" || args === "off") {
     const isAdmin = await isGroupAdmin(ctx, ctx.from!.id);
@@ -520,7 +520,7 @@ protectionComposer.command("reports", onlyGroups, async (ctx) => {
 
 // ── Approval Submodule ──────────────────────────────────────────
 
-protectionComposer.command("approve", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("approve", onlyGroups, adminsOnly, async (ctx) => {
   const target = await resolveTarget(ctx);
   if (target.userId === null) {
     if (target.username) {
@@ -538,7 +538,7 @@ protectionComposer.command("approve", onlyGroups, adminsOnly, async (ctx) => {
   });
 });
 
-protectionComposer.command("unapprove", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("unapprove", onlyGroups, adminsOnly, async (ctx) => {
   const target = await resolveTarget(ctx);
   if (target.userId === null) {
     if (target.username) {
@@ -554,7 +554,7 @@ protectionComposer.command("unapprove", onlyGroups, adminsOnly, async (ctx) => {
   await ctx.reply(`${userLink(info)} is no longer approved.`, { parse_mode: "HTML" });
 });
 
-protectionComposer.command("approved", onlyGroups, async (ctx) => {
+securityComposer.command("approved", onlyGroups, async (ctx) => {
   const userIds = store.getApprovedUsers(ctx.chat.id);
   if (userIds.length === 0) {
     await ctx.reply("No users are currently approved in this group.");
@@ -565,7 +565,7 @@ protectionComposer.command("approved", onlyGroups, async (ctx) => {
   await ctx.reply(`<b>Approved users in this group:</b>\n\n${list}`, { parse_mode: "HTML" });
 });
 
-protectionComposer.command("approval", onlyGroups, adminsOnly, async (ctx) => {
+securityComposer.command("approval", onlyGroups, adminsOnly, async (ctx) => {
   const arg = ctx.message?.text?.replace(/^\/approval(@\w+)?\s*/i, "").trim().toLowerCase();
   if (arg !== "on" && arg !== "off") {
     const gated = store.isApprovalGated(ctx.chat.id);
@@ -584,7 +584,7 @@ protectionComposer.command("approval", onlyGroups, adminsOnly, async (ctx) => {
 
 // ── Global Message Interceptor: Locks, Filters & Antiflood ────────
 
-protectionComposer.on("message", async (ctx, next) => {
+securityComposer.on("message", async (ctx, next) => {
   if (!ctx.chat || ctx.chat.type === "private" || !ctx.from) {
     return next();
   }
@@ -654,7 +654,7 @@ protectionComposer.on("message", async (ctx, next) => {
   return next();
 });
 
-/** Register the protection module on a bot instance. */
-export function registerProtection(bot: { use: (c: Composer<Context>) => void }): void {
-  bot.use(protectionComposer);
+/** Register the security module on a bot instance. */
+export function registerSecurity(bot: { use: (c: Composer<Context>) => void }): void {
+  bot.use(securityComposer);
 }

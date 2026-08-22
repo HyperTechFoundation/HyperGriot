@@ -50,9 +50,9 @@ Example:
 
 ## Approval-gated joins
 
-When `/welcomemute` is set, new joiners are muted for the given duration. Combined with the approval system (see the [Protection guide](protection.md)), this creates a gating flow where an admin must `/approve` a new member before they can speak.
+When `/welcomemute` is set, new joiners are muted for the given duration. Combined with the approval system (see the [Security guide](security.md)), this creates a gating flow where an admin must `/approve` a new member before they can speak.
 
 > [!TIP]
 > If your group is linked to a federation, federation-banned users are removed on join before any welcome message is sent. See [Federations](federations.md).
 
-Next: [Governance guide](governance.md).
+Next: [Admin guide](admin.md).

@@ -39,14 +39,15 @@ Incoming update
 
 ## Module map
 
-| Module group | Modules |
+| Module directory | Commands and features |
 | --- | --- |
-| Moderation | ban, tban, sban, unban, mute, tmute, smute, unmute, kick |
-| Onboarding | welcome, goodbye |
-| Governance | pin, rules, notes, admin |
-| Protection | antiflood, locks, filters, reports, warnings, approval |
-| Network | federation, logchannel |
-| Hygiene | clean, disabling, topics |
+| `moderation` | ban, tban, sban, unban, mute, tmute, smute, unmute, kick |
+| `welcome` | welcome, goodbye, welcomebutton, welcomemute |
+| `admin` | pin, rules, notes, promote, demote, adminlist, title |
+| `security` | antiflood, locks, filters, reports, warnings, approval |
+| `federation` | federation, logchannel |
+| `cleanup` | clean, disabling, cleanservice, topics |
+| `help` | interactive 3-column Miss Rose-style menu |
 
 ## Data model
 

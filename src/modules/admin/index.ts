@@ -15,14 +15,14 @@ import {
 import { escapeHtml, userLink } from "../../core/formatting.js";
 import { resolveTarget } from "../../core/target.js";
 import { store } from "../../repository/store.js";
-import { parseButton } from "../onboarding/index.js";
+import { parseButton } from "../welcome/index.js";
 import type { InlineUrlButton, Note, UserInfo } from "../../types/index.js";
 
-export const governanceComposer = new Composer<Context>();
+export const adminComposer = new Composer<Context>();
 
 // ── Pin Submodule ───────────────────────────────────────────────
 
-governanceComposer.command("pin", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("pin", onlyGroups, adminsOnly, async (ctx) => {
   if (!(await botCanPin(ctx))) {
     await ctx.reply("I need the **Pin Messages** right to do this.");
     return;
@@ -47,7 +47,7 @@ governanceComposer.command("pin", onlyGroups, adminsOnly, async (ctx) => {
   }
 });
 
-governanceComposer.command("unpin", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("unpin", onlyGroups, adminsOnly, async (ctx) => {
   if (!(await botCanPin(ctx))) {
     await ctx.reply("I need the **Pin Messages** right to do this.");
     return;
@@ -67,7 +67,7 @@ governanceComposer.command("unpin", onlyGroups, adminsOnly, async (ctx) => {
   }
 });
 
-governanceComposer.command("unpinall", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("unpinall", onlyGroups, adminsOnly, async (ctx) => {
   if (!(await botCanPin(ctx))) {
     await ctx.reply("I need the **Pin Messages** right to do this.");
     return;
@@ -81,7 +81,7 @@ governanceComposer.command("unpinall", onlyGroups, adminsOnly, async (ctx) => {
   }
 });
 
-governanceComposer.command("pinned", onlyGroups, async (ctx) => {
+adminComposer.command("pinned", onlyGroups, async (ctx) => {
   try {
     const chat = await ctx.api.getChat(ctx.chat.id);
     if ("pinned_message" in chat && chat.pinned_message) {
@@ -98,7 +98,7 @@ governanceComposer.command("pinned", onlyGroups, async (ctx) => {
 
 // ── Rules Submodule ─────────────────────────────────────────────
 
-governanceComposer.command("setrules", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("setrules", onlyGroups, adminsOnly, async (ctx) => {
   let text = "";
   if (ctx.message?.reply_to_message?.text) {
     text = ctx.message.reply_to_message.text;
@@ -115,7 +115,7 @@ governanceComposer.command("setrules", onlyGroups, adminsOnly, async (ctx) => {
   await ctx.reply("Group rules have been updated.");
 });
 
-governanceComposer.command("rules", onlyGroups, async (ctx) => {
+adminComposer.command("rules", onlyGroups, async (ctx) => {
   const rulesCfg = store.getRules(ctx.chat.id);
   const kb = new InlineKeyboard();
   if (rulesCfg.button) {
@@ -128,12 +128,12 @@ governanceComposer.command("rules", onlyGroups, async (ctx) => {
   });
 });
 
-governanceComposer.command("clearrules", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("clearrules", onlyGroups, adminsOnly, async (ctx) => {
   store.clearRules(ctx.chat.id);
   await ctx.reply("Rules have been cleared.");
 });
 
-governanceComposer.command("setrulesbutton", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("setrulesbutton", onlyGroups, adminsOnly, async (ctx) => {
   const args = ctx.message?.text?.replace(/^\/setrulesbutton(@\w+)?\s*/i, "").trim() || "";
   if (!args || args.toLowerCase() === "clear") {
     store.setRulesButton(ctx.chat.id, undefined);
@@ -177,7 +177,7 @@ function extractButtonsFromText(text: string): { cleanText: string; buttons: Inl
   return { cleanText, buttons };
 }
 
-governanceComposer.command("save", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("save", onlyGroups, adminsOnly, async (ctx) => {
   const raw = ctx.message?.text?.replace(/^\/save(@\w+)?\s*/i, "").trim() || "";
   if (!raw) {
     await ctx.reply("Usage: <code>/save &lt;notename&gt; &lt;content&gt;</code> or reply to a message with <code>/save &lt;notename&gt;</code>", {
@@ -217,7 +217,7 @@ governanceComposer.command("save", onlyGroups, adminsOnly, async (ctx) => {
   await ctx.reply(`Saved note <code>#${escapeHtml(name)}</code>.`, { parse_mode: "HTML" });
 });
 
-governanceComposer.command("get", onlyGroups, async (ctx) => {
+adminComposer.command("get", onlyGroups, async (ctx) => {
   const name = ctx.message?.text?.replace(/^\/get(@\w+)?\s*/i, "").trim().toLowerCase();
   if (!name) {
     await ctx.reply("Usage: /get <notename>");
@@ -226,7 +226,7 @@ governanceComposer.command("get", onlyGroups, async (ctx) => {
   await sendNote(ctx, name);
 });
 
-governanceComposer.command("notes", onlyGroups, async (ctx) => {
+adminComposer.command("notes", onlyGroups, async (ctx) => {
   const notes = store.getNotes(ctx.chat.id);
   const keys = Object.keys(notes);
   if (keys.length === 0) {
@@ -240,7 +240,7 @@ governanceComposer.command("notes", onlyGroups, async (ctx) => {
   });
 });
 
-governanceComposer.command("clear", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("clear", onlyGroups, adminsOnly, async (ctx) => {
   const name = ctx.message?.text?.replace(/^\/clear(@\w+)?\s*/i, "").trim().toLowerCase();
   if (!name) {
     await ctx.reply("Usage: /clear <notename>");
@@ -255,12 +255,12 @@ governanceComposer.command("clear", onlyGroups, adminsOnly, async (ctx) => {
   }
 });
 
-governanceComposer.command("removeall", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("removeall", onlyGroups, adminsOnly, async (ctx) => {
   store.clearAllNotes(ctx.chat.id);
   await ctx.reply("All notes have been removed from this chat.");
 });
 
-governanceComposer.command("private", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("private", onlyGroups, adminsOnly, async (ctx) => {
   const args = ctx.message?.text?.replace(/^\/private(@\w+)?\s*/i, "").trim().toLowerCase();
   if (args !== "on" && args !== "off") {
     const isPriv = store.isNotesPrivate(ctx.chat.id);
@@ -311,7 +311,7 @@ async function sendNote(ctx: Context, noteName: string): Promise<void> {
 }
 
 // ── Handle #notename hashtag invocation ───────────────────────────
-governanceComposer.on("message:entities:hashtag", async (ctx, next) => {
+adminComposer.on("message:entities:hashtag", async (ctx, next) => {
   const text = ctx.message.text || "";
   const entities = ctx.message.entities || [];
   for (const ent of entities) {
@@ -329,7 +329,7 @@ governanceComposer.on("message:entities:hashtag", async (ctx, next) => {
 
 // ── Admin Submodule ─────────────────────────────────────────────
 
-governanceComposer.command("promote", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("promote", onlyGroups, adminsOnly, async (ctx) => {
   if (!(await botCanPromote(ctx))) {
     await ctx.reply("I need the **Promote Members** right to do this.");
     return;
@@ -360,7 +360,7 @@ governanceComposer.command("promote", onlyGroups, adminsOnly, async (ctx) => {
   }
 });
 
-governanceComposer.command("demote", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("demote", onlyGroups, adminsOnly, async (ctx) => {
   if (!(await botCanPromote(ctx))) {
     await ctx.reply("I need the **Promote Members** right to do this.");
     return;
@@ -395,7 +395,7 @@ governanceComposer.command("demote", onlyGroups, adminsOnly, async (ctx) => {
   }
 });
 
-governanceComposer.command("adminlist", onlyGroups, async (ctx) => {
+adminComposer.command("adminlist", onlyGroups, async (ctx) => {
   try {
     const admins = await ctx.api.getChatAdministrators(ctx.chat.id);
     for (const a of admins) {
@@ -432,7 +432,7 @@ governanceComposer.command("adminlist", onlyGroups, async (ctx) => {
   }
 });
 
-governanceComposer.command("title", onlyGroups, adminsOnly, async (ctx) => {
+adminComposer.command("title", onlyGroups, adminsOnly, async (ctx) => {
   if (!(await botCanPromote(ctx))) {
     await ctx.reply("I need the **Promote Members** right to do this.");
     return;
@@ -467,7 +467,7 @@ governanceComposer.command("title", onlyGroups, adminsOnly, async (ctx) => {
   }
 });
 
-/** Register the governance module on a bot instance. */
-export function registerGovernance(bot: { use: (c: Composer<Context>) => void }): void {
-  bot.use(governanceComposer);
+/** Register the admin module on a bot instance. */
+export function registerAdmin(bot: { use: (c: Composer<Context>) => void }): void {
+  bot.use(adminComposer);
 }

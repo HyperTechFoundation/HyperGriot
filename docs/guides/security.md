@@ -1,6 +1,6 @@
-# Protection guide
+# Security guide
 
-Protection features automatically defend a group against spam, floods, and rule violations, and give admins lighter-touch tools (warnings, reports, approvals).
+Security features automatically defend a group against spam, floods, and rule violations, and give admins lighter-touch tools (warnings, reports, approvals).
 
 ## Locks
 
@@ -78,7 +78,7 @@ Reports let members flag a message for admin attention.
 
 ## Approvals
 
-Approval exempts a user from locks and flood limits. It also powers the gating flow described in [Onboarding](onboarding.md).
+Approval exempts a user from locks and flood limits. It also powers the gating flow described in [Welcome](welcome.md).
 
 | Command | Description |
 | --- | --- |

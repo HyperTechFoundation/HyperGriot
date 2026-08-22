@@ -68,4 +68,4 @@ The header verb changes with the action (`got banned`, `got muted`, `got kicked`
 
 Required right: Ban users (`can_restrict_members`) for all commands in this guide.
 
-Next: [Onboarding guide](onboarding.md).
+Next: [Welcome guide](welcome.md).
