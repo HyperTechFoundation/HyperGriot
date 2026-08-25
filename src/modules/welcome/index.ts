@@ -6,7 +6,7 @@
 
 import { Composer, type Context, InlineKeyboard } from "grammy";
 import type { User } from "grammy/types";
-import { adminsOnly, botCanDelete, botCanPin, botCanRestrict, onlyGroups } from "../../core/guards.js";
+import { adminsOnly, botCanDelete, botCanPin, botCanRestrict, isGroupAdmin, onlyGroups } from "../../core/guards.js";
 import { escapeHtml } from "../../core/formatting.js";
 import { parseTime } from "../../core/time.js";
 import { store } from "../../repository/store.js";
@@ -260,8 +260,7 @@ welcomeComposer.on("message:new_chat_members", async (ctx) => {
     // 1) Check if chat is subscribed to a federation and if user is fed-banned
     const fedId = store.getChatFedId(ctx.chat.id);
     if (fedId) {
-      const bans = store.getFedBans(fedId);
-      const isBanned = bans.some((b) => b.userId === member.id);
+      const isBanned = store.isFedBanned(fedId, member.id);
       if (isBanned && (await botCanRestrict(ctx))) {
         try {
           await ctx.api.banChatMember(ctx.chat.id, member.id);
@@ -272,8 +271,38 @@ welcomeComposer.on("message:new_chat_members", async (ctx) => {
       }
     }
 
-    // 2) Handle welcomemute if configured
-    if (cfg.muteDurationMs && (await botCanRestrict(ctx))) {
+    // 2) Approval gating: if enabled, mute unapproved non-admin joiners
+    let caughtByApprovalGate = false;
+    if (store.isApprovalGated(ctx.chat.id) && (await botCanRestrict(ctx)) && !member.is_bot) {
+      const memberIsAdmin = await isGroupAdmin(ctx, member.id);
+      const memberIsApproved = store.isApproved(ctx.chat.id, member.id);
+      if (!memberIsAdmin && !memberIsApproved) {
+        caughtByApprovalGate = true;
+        try {
+          await ctx.api.restrictChatMember(ctx.chat.id, member.id, {
+            can_send_messages: false,
+            can_send_audios: false,
+            can_send_documents: false,
+            can_send_photos: false,
+            can_send_videos: false,
+            can_send_video_notes: false,
+            can_send_voice_notes: false,
+            can_send_polls: false,
+            can_send_other_messages: false,
+            can_add_web_page_previews: false,
+            can_change_info: false,
+            can_invite_users: false,
+            can_pin_messages: false,
+            can_manage_topics: false,
+          });
+        } catch {
+          /* best-effort */
+        }
+      }
+    }
+
+    // 3) Handle welcomemute if configured
+    if (!caughtByApprovalGate && cfg.muteDurationMs && (await botCanRestrict(ctx))) {
       try {
         const until = Math.floor((Date.now() + cfg.muteDurationMs) / 1000);
         await ctx.api.restrictChatMember(ctx.chat.id, member.id, {

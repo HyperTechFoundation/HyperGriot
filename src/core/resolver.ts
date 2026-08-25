@@ -19,7 +19,8 @@ interface CacheEntry {
   ts: number;
 }
 
-const cache = new Map<string, CacheEntry>(); // key = lowercased @username
+const cacheByUsername = new Map<string, CacheEntry>(); // key = lowercased @username
+const cacheById = new Map<number, CacheEntry>();       // key = numeric userId
 
 function key(username: string): string {
   return username.replace(/^@/, "").toLowerCase();
@@ -35,8 +36,16 @@ export function cacheUser(user: { id: number; first_name?: string; firstName?: s
     ts: Date.now(),
   };
 
+  // If user previously had a different username in cache, clean up old username index
+  const existing = cacheById.get(user.id);
+  if (existing?.username && existing.username.toLowerCase() !== user.username?.toLowerCase()) {
+    cacheByUsername.delete(key(existing.username));
+  }
+
+  cacheById.set(user.id, entry);
+
   if (user.username) {
-    cache.set(key(user.username), entry);
+    cacheByUsername.set(key(user.username), entry);
   }
 
   // Also persist to store
@@ -63,7 +72,7 @@ export function resolveUsername(username: string): UserInfo | null {
   const clean = key(username);
 
   // 1. Fast in-memory cache
-  const entry = cache.get(clean);
+  const entry = cacheByUsername.get(clean);
   if (entry) {
     return { id: entry.userId, firstName: entry.firstName, username: entry.username };
   }
@@ -72,12 +81,14 @@ export function resolveUsername(username: string): UserInfo | null {
   try {
     const fromStore = store.getUserByUsername(clean);
     if (fromStore) {
-      cache.set(clean, {
+      const cacheEntry: CacheEntry = {
         userId: fromStore.id,
         firstName: fromStore.firstName,
         username: fromStore.username,
         ts: fromStore.lastSeen,
-      });
+      };
+      cacheByUsername.set(clean, cacheEntry);
+      cacheById.set(fromStore.id, cacheEntry);
       return { id: fromStore.id, firstName: fromStore.firstName, username: fromStore.username };
     }
   } catch {
@@ -123,15 +134,24 @@ export async function resolveUsernameWithContext(
 
 /** Look up display info for a cached user by ID (memory cache -> persistent store). */
 export function userInfoById(userId: number): UserInfo | null {
-  for (const entry of cache.values()) {
-    if (entry.userId === userId) {
-      return { id: entry.userId, firstName: entry.firstName, username: entry.username };
-    }
+  const cached = cacheById.get(userId);
+  if (cached) {
+    return { id: cached.userId, firstName: cached.firstName, username: cached.username };
   }
 
   try {
     const fromStore = store.getUserById(userId);
     if (fromStore) {
+      const cacheEntry: CacheEntry = {
+        userId: fromStore.id,
+        firstName: fromStore.firstName,
+        username: fromStore.username,
+        ts: fromStore.lastSeen,
+      };
+      cacheById.set(fromStore.id, cacheEntry);
+      if (fromStore.username) {
+        cacheByUsername.set(key(fromStore.username), cacheEntry);
+      }
       return { id: fromStore.id, firstName: fromStore.firstName, username: fromStore.username };
     }
   } catch {
@@ -143,5 +163,6 @@ export function userInfoById(userId: number): UserInfo | null {
 
 /** Test helper. */
 export function clearUsernameCache(): void {
-  cache.clear();
+  cacheByUsername.clear();
+  cacheById.clear();
 }

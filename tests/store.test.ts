@@ -115,11 +115,16 @@ describe("store repository", () => {
       banner: 999,
       ts: Date.now(),
     });
+    expect(store.isFedBanned("fed1", 555)).toBe(true);
+    expect(store.isFedBanned("fed1", 777)).toBe(false);
     expect(store.getFedBan("fed1", 555)?.reason).toBe("Scammer");
+    expect(store.getFedBanCount("fed1")).toBe(1);
     expect(store.getFedBans("fed1")).toHaveLength(1);
 
     store.removeFedBan("fed1", 555);
+    expect(store.isFedBanned("fed1", 555)).toBe(false);
     expect(store.getFedBan("fed1", 555)).toBeNull();
+    expect(store.getFedBanCount("fed1")).toBe(0);
 
     store.unsubscribeChatFromFed(CHAT_ID);
     expect(store.getChatFedId(CHAT_ID)).toBeNull();
